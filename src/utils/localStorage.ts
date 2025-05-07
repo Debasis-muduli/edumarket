@@ -1,204 +1,126 @@
-
-interface Book {
-  id: string;
-  title: string;
-  author: string;
-  description: string;
-  price: number;
-  coverImage: string;
-  category: string;
-  fileUrl?: string;
-  isPaid: boolean;
-  uploadedBy: string;
-  createdAt: string;
-}
-
-interface Course {
-  id: string;
-  title: string;
-  instructor: string;
-  description: string;
-  price: number;
-  coverImage: string;
-  category: string;
-  videoUrl?: string;
-  materialUrl?: string;
-  isPaid: boolean;
-  uploadedBy: string;
-  createdAt: string;
-}
-
-interface Purchase {
-  id: string;
-  userId: string;
-  itemId: string;
-  itemType: 'book' | 'course';
-  purchaseDate: string;
-}
-
-// Initialize storage if it doesn't exist
 export const initializeStorage = () => {
-  if (!localStorage.getItem('books')) {
-    localStorage.setItem('books', JSON.stringify([]));
+  if (typeof localStorage === 'undefined') {
+    return;
   }
   
-  if (!localStorage.getItem('courses')) {
-    localStorage.setItem('courses', JSON.stringify([]));
+  if (!localStorage.getItem("books")) {
+    localStorage.setItem(
+      "books",
+      JSON.stringify([
+        {
+          id: "book-1",
+          title: "The Great Gatsby",
+          author: "F. Scott Fitzgerald",
+          description: "A novel about the Roaring Twenties.",
+          coverImage: "https://images.unsplash.com/photo-1561200758-9523d143ed8f?auto=format&fit=crop&w=400&q=80",
+          category: "Fiction",
+          isPaid: false,
+          price: 0,
+        },
+        {
+          id: "book-2",
+          title: "To Kill a Mockingbird",
+          author: "Harper Lee",
+          description: "A classic novel set in the American South.",
+          coverImage: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80",
+          category: "Fiction",
+          isPaid: true,
+          price: 9.99,
+        },
+        {
+          id: "book-3",
+          title: "Sapiens: A Brief History of Humankind",
+          author: "Yuval Noah Harari",
+          description: "A sweeping survey of the history of humankind.",
+          coverImage: "https://images.unsplash.com/photo-1507842214779-8d0453ef86f3?auto=format&fit=crop&w=400&q=80",
+          category: "Non-Fiction",
+          isPaid: true,
+          price: 12.5,
+        },
+      ])
+    );
   }
-  
-  if (!localStorage.getItem('purchases')) {
-    localStorage.setItem('purchases', JSON.stringify([]));
+
+  if (!localStorage.getItem("courses")) {
+    localStorage.setItem(
+      "courses",
+      JSON.stringify([
+        {
+          id: "course-1",
+          title: "Web Development Bootcamp",
+          instructor: "John Doe",
+          description: "Learn web development from scratch.",
+          coverImage: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=500&q=80",
+          category: "Programming",
+          isPaid: true,
+          price: 49.99,
+        },
+        {
+          id: "course-2",
+          title: "Graphic Design Masterclass",
+          instructor: "Jane Smith",
+          description: "Master the art of graphic design.",
+          coverImage: "https://images.unsplash.com/photo-1505373469526-3a647d064a43?auto=format&fit=crop&w=500&q=80",
+          category: "Design",
+          isPaid: true,
+          price: 39.99,
+        },
+        {
+          id: "course-3",
+          title: "Digital Marketing 101",
+          instructor: "Mike Johnson",
+          description: "Learn the basics of digital marketing.",
+          coverImage: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=500&q=80",
+          category: "Marketing",
+          isPaid: false,
+          price: 0,
+        },
+      ])
+    );
+  }
+
+  if (!localStorage.getItem("purchases")) {
+    localStorage.setItem("purchases", JSON.stringify([]));
   }
 };
 
-// Books
-export const getBooks = (): Book[] => {
-  return JSON.parse(localStorage.getItem('books') || '[]');
+export const getBooks = () => {
+  if (typeof localStorage === 'undefined') {
+    return [];
+  }
+  const books = localStorage.getItem("books");
+  return books ? JSON.parse(books) : [];
 };
 
-export const getBook = (id: string): Book | undefined => {
+export const getCourses = () => {
+  if (typeof localStorage === 'undefined') {
+    return [];
+  }
+  const courses = localStorage.getItem("courses");
+  return courses ? JSON.parse(courses) : [];
+};
+
+export const addPurchase = (userId: string, itemId: string) => {
+  const purchases = JSON.parse(localStorage.getItem("purchases") || "[]");
+  purchases.push({ userId, itemId });
+  localStorage.setItem("purchases", JSON.stringify(purchases));
+};
+
+export const hasUserPurchased = (userId: string, itemId: string) => {
+  const purchases = JSON.parse(localStorage.getItem("purchases") || "[]");
+  return purchases.some(
+    (purchase: any) => purchase.userId === userId && purchase.itemId === itemId
+  );
+};
+
+// Get book by ID
+export const getBookById = (id: string) => {
   const books = getBooks();
   return books.find(book => book.id === id);
 };
 
-export const addBook = (book: Omit<Book, 'id' | 'createdAt'>): Book => {
-  const books = getBooks();
-  const newBook = {
-    ...book,
-    id: `book-${Date.now()}`,
-    createdAt: new Date().toISOString(),
-  };
-  
-  books.push(newBook);
-  localStorage.setItem('books', JSON.stringify(books));
-  return newBook;
-};
-
-export const updateBook = (id: string, updates: Partial<Book>) => {
-  let books = getBooks();
-  const index = books.findIndex(book => book.id === id);
-  
-  if (index !== -1) {
-    books[index] = { ...books[index], ...updates };
-    localStorage.setItem('books', JSON.stringify(books));
-    return true;
-  }
-  return false;
-};
-
-export const deleteBook = (id: string) => {
-  const books = getBooks();
-  const filtered = books.filter(book => book.id !== id);
-  
-  if (filtered.length !== books.length) {
-    localStorage.setItem('books', JSON.stringify(filtered));
-    return true;
-  }
-  return false;
-};
-
-// Courses
-export const getCourses = (): Course[] => {
-  return JSON.parse(localStorage.getItem('courses') || '[]');
-};
-
-export const getCourse = (id: string): Course | undefined => {
+// Get course by ID
+export const getCourseById = (id: string) => {
   const courses = getCourses();
   return courses.find(course => course.id === id);
-};
-
-export const addCourse = (course: Omit<Course, 'id' | 'createdAt'>): Course => {
-  const courses = getCourses();
-  const newCourse = {
-    ...course,
-    id: `course-${Date.now()}`,
-    createdAt: new Date().toISOString(),
-  };
-  
-  courses.push(newCourse);
-  localStorage.setItem('courses', JSON.stringify(courses));
-  return newCourse;
-};
-
-export const updateCourse = (id: string, updates: Partial<Course>) => {
-  let courses = getCourses();
-  const index = courses.findIndex(course => course.id === id);
-  
-  if (index !== -1) {
-    courses[index] = { ...courses[index], ...updates };
-    localStorage.setItem('courses', JSON.stringify(courses));
-    return true;
-  }
-  return false;
-};
-
-export const deleteCourse = (id: string) => {
-  const courses = getCourses();
-  const filtered = courses.filter(course => course.id !== id);
-  
-  if (filtered.length !== courses.length) {
-    localStorage.setItem('courses', JSON.stringify(filtered));
-    return true;
-  }
-  return false;
-};
-
-// Purchases
-export const addPurchase = (userId: string, itemId: string, itemType: 'book' | 'course') => {
-  const purchases = JSON.parse(localStorage.getItem('purchases') || '[]');
-  
-  // Check if already purchased
-  const existingPurchase = purchases.find(
-    (p: Purchase) => p.userId === userId && p.itemId === itemId
-  );
-  
-  if (existingPurchase) {
-    return existingPurchase;
-  }
-  
-  const newPurchase = {
-    id: `purchase-${Date.now()}`,
-    userId,
-    itemId,
-    itemType,
-    purchaseDate: new Date().toISOString(),
-  };
-  
-  purchases.push(newPurchase);
-  localStorage.setItem('purchases', JSON.stringify(purchases));
-  return newPurchase;
-};
-
-export const getUserPurchases = (userId: string): Purchase[] => {
-  const purchases = JSON.parse(localStorage.getItem('purchases') || '[]');
-  return purchases.filter((p: Purchase) => p.userId === userId);
-};
-
-export const hasUserPurchased = (userId: string, itemId: string): boolean => {
-  const purchases = JSON.parse(localStorage.getItem('purchases') || '[]');
-  return purchases.some(
-    (p: Purchase) => p.userId === userId && p.itemId === itemId
-  );
-};
-
-// User content
-export const getUserUploads = (userId: string) => {
-  const books = getBooks();
-  const courses = getCourses();
-  
-  return {
-    books: books.filter(book => book.uploadedBy === userId),
-    courses: courses.filter(course => course.uploadedBy === userId)
-  };
-};
-
-// File handling utilities (simulate file storage using localStorage)
-export const storeFileData = (fileName: string, fileData: string): string => {
-  const fileId = `file-${Date.now()}`;
-  localStorage.setItem(fileId, fileData);
-  return fileId;
-};
-
-export const getFileData = (fileId: string): string | null => {
-  return localStorage.getItem(fileId);
 };

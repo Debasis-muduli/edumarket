@@ -13,6 +13,8 @@ import Register from "./pages/Auth/Register";
 import BooksPage from "./pages/Books/BooksPage";
 import CoursesPage from "./pages/Courses/CoursesPage";
 import Dashboard from "./pages/Dashboard/Dashboard";
+import BookDetail from "./components/Books/BookDetail";
+import CourseDetail from "./components/Courses/CourseDetail";
 import { useEffect } from "react";
 import { initializeStorage } from "./utils/localStorage";
 
@@ -47,8 +49,26 @@ const AppContent = () => {
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/books" element={<BooksPage />} />
-          <Route path="/courses" element={<CoursesPage />} />
+          <Route path="/books" element={
+            <ProtectedRoute>
+              <BooksPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/books/:id" element={
+            <ProtectedRoute>
+              <BookDetail />
+            </ProtectedRoute>
+          } />
+          <Route path="/courses" element={
+            <ProtectedRoute>
+              <CoursesPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/courses/:id" element={
+            <ProtectedRoute>
+              <CourseDetail />
+            </ProtectedRoute>
+          } />
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />

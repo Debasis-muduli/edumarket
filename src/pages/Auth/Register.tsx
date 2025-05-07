@@ -31,8 +31,8 @@ const Register = () => {
     try {
       const success = await register(name, email, password);
       if (success) {
-        toast.success("Registration successful!");
-        navigate("/dashboard");
+        toast.success("Registration successful! Please login with your credentials.");
+        navigate("/login"); // Redirect to login page instead of dashboard
       } else {
         toast.error("Email already in use.");
       }
