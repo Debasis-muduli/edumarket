@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Download, Video } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { getCourseById, hasUserPurchased } from "@/utils/localStorage";
+import { getCourseById, hasUserPurchased, addAccessedCourse, formatPrice } from "@/utils/localStorage";
 import { toast } from "sonner";
 
 const CourseDetail = () => {
@@ -24,6 +24,11 @@ const CourseDetail = () => {
       toast("Redirecting to purchase page...");
       // In a real app, redirect to purchase page
       return;
+    }
+    
+    // Add to user's accessed courses
+    if (user && course) {
+      addAccessedCourse(user.id, course.id);
     }
     
     toast.success("Accessing course content!");
@@ -63,7 +68,7 @@ const CourseDetail = () => {
               {course.category}
             </span>
             <span className="font-semibold text-lg">
-              {course.isPaid ? `$${course.price.toFixed(2)}` : "Free"}
+              {formatPrice(course.price, course.currency)}
             </span>
           </div>
           

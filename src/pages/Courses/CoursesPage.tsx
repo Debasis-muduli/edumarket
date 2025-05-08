@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -8,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Video, Download } from "lucide-react";
-import { getCourses, hasUserPurchased, initializeStorage } from "@/utils/localStorage";
+import { getCourses, hasUserPurchased, initializeStorage, formatPrice } from "@/utils/localStorage";
 import { toast } from "sonner";
 
 const CoursesPage = () => {
@@ -23,7 +22,7 @@ const CoursesPage = () => {
     setCourses(getCourses());
   }, []);
 
-  const categories = ["Programming", "Design", "Business", "Marketing", "Personal Development", "Health"];
+  const categories = ["Programming", "Design", "Business", "Marketing", "Personal Development", "Health", "Data Science"];
   
   const filterCourses = () => {
     return courses.filter(course => {
@@ -132,7 +131,7 @@ const CoursesPage = () => {
                 <p className="text-sm text-muted-foreground">{course.instructor}</p>
                 <div className="flex items-center justify-between mt-2">
                   <span className="font-medium">
-                    {course.isPaid ? `$${course.price.toFixed(2)}` : "Free"}
+                    {formatPrice(course.price, course.currency)}
                   </span>
                   <Link to={`/courses/${course.id}`}>
                     <Button size="sm" className="text-xs">Details</Button>

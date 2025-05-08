@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -15,6 +14,8 @@ import { toast } from "sonner";
 import {
   getUserUploads,
   getUserPurchases,
+  getUserDownloadedBooks,
+  getUserAccessedCourses,
   addBook,
   addCourse,
   deleteBook,
@@ -24,7 +25,8 @@ import {
   getBooks,
   getCourses,
   hasUserPurchased,
-  initializeStorage
+  initializeStorage,
+  formatPrice
 } from "@/utils/localStorage";
 
 const Dashboard = () => {
@@ -35,6 +37,8 @@ const Dashboard = () => {
   const [userBooks, setUserBooks] = useState<any[]>([]);
   const [userCourses, setUserCourses] = useState<any[]>([]);
   const [purchasedItems, setPurchasedItems] = useState<any[]>([]);
+  const [downloadedBooks, setDownloadedBooks] = useState<any[]>([]);
+  const [accessedCourses, setAccessedCourses] = useState<any[]>([]);
   
   // Book upload form
   const [bookTitle, setBookTitle] = useState("");
@@ -121,6 +125,12 @@ const Dashboard = () => {
     }
     
     setPurchasedItems(purchasedContent);
+    
+    // Get downloaded books
+    setDownloadedBooks(getUserDownloadedBooks(user.id));
+    
+    // Get accessed courses
+    setAccessedCourses(getUserAccessedCourses(user.id));
   };
   
   const handleBookUpload = (e: React.FormEvent) => {
@@ -251,9 +261,10 @@ const Dashboard = () => {
       <h1 className="text-3xl font-bold mb-8">User Dashboard</h1>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-        <TabsList className="grid grid-cols-4">
+        <TabsList className="grid grid-cols-5">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="my-content">My Content</TabsTrigger>
+          <TabsTrigger value="my-library">My Library</TabsTrigger>
           <TabsTrigger value="upload-book">Upload Book</TabsTrigger>
           <TabsTrigger value="upload-course">Create Course</TabsTrigger>
         </TabsList>
@@ -318,6 +329,9 @@ const Dashboard = () => {
                           </span>
                           <span className="text-xs text-muted-foreground">
                             Purchased on {new Date(item.purchaseDate).toLocaleDateString()}
+                          </span>
+                          <span className="text-xs font-medium ml-auto">
+                            {formatPrice(item.price, item.currency)}
                           </span>
                         </div>
                       </div>
@@ -436,6 +450,107 @@ const Dashboard = () => {
                 <div className="text-center py-8">
                   <Video className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">You haven't created any courses yet.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* My Library Tab */}
+        <TabsContent value="my-library">
+          <Card>
+            <CardHeader>
+              <CardTitle>Downloaded Books</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {downloadedBooks.length > 0 ? (
+                <div className="space-y-4">
+                  {downloadedBooks.map(book => (
+                    <div key={book.id} className="flex items-center gap-4 p-4 bg-muted rounded-md">
+                      <div className="w-16 h-20 bg-secondary rounded overflow-hidden flex-shrink-0">
+                        <img 
+                          src={book.coverImage || "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=200&q=80"} 
+                          alt={book.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium">{book.title}</h4>
+                        <p className="text-sm text-muted-foreground">By {book.author}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs bg-muted-foreground/20 px-2 py-1 rounded">
+                            {book.category}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            Downloaded on {new Date(book.downloadDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="flex-shrink-0"
+                        onClick={() => toast.success("Downloading book again!")}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Book className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">You haven't downloaded any books yet.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Accessed Courses</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {accessedCourses.length > 0 ? (
+                <div className="space-y-4">
+                  {accessedCourses.map(course => (
+                    <div key={course.id} className="flex items-center gap-4 p-4 bg-muted rounded-md">
+                      <div className="w-24 h-16 bg-secondary rounded overflow-hidden flex-shrink-0">
+                        <img 
+                          src={course.coverImage || "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=200&q=80"} 
+                          alt={course.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium">{course.title}</h4>
+                        <p className="text-sm text-muted-foreground">Instructor: {course.instructor}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs bg-muted-foreground/20 px-2 py-1 rounded">
+                            {course.category}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            Last accessed on {new Date(course.accessDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="flex-shrink-0"
+                        onClick={() => toast.success("Accessing course content!")}
+                      >
+                        <Video className="h-4 w-4 mr-2" />
+                        Continue
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Video className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">You haven't accessed any courses yet.</p>
                 </div>
               )}
             </CardContent>

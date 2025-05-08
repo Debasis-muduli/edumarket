@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Book, Download } from "lucide-react";
-import { getBooks, hasUserPurchased, initializeStorage } from "@/utils/localStorage";
+import { getBooks, hasUserPurchased, initializeStorage, formatPrice } from "@/utils/localStorage";
 import { toast } from "sonner";
 
 const BooksPage = () => {
@@ -126,7 +126,7 @@ const BooksPage = () => {
                 <p className="text-sm text-muted-foreground">{book.author}</p>
                 <div className="flex items-center justify-between mt-2">
                   <span className="font-medium">
-                    {book.isPaid ? `$${book.price.toFixed(2)}` : "Free"}
+                    {formatPrice(book.price, book.currency)}
                   </span>
                   <div className="flex gap-2">
                     <Button

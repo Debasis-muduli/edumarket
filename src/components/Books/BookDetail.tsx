@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Download, BookOpen } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { getBookById, hasUserPurchased } from "@/utils/localStorage";
+import { getBookById, hasUserPurchased, addDownloadedBook, formatPrice } from "@/utils/localStorage";
 import { toast } from "sonner";
 
 const BookDetail = () => {
@@ -24,6 +24,11 @@ const BookDetail = () => {
       toast("Redirecting to purchase page...");
       // In a real app, redirect to purchase page
       return;
+    }
+    
+    // Add to user's downloaded books
+    if (user && book) {
+      addDownloadedBook(user.id, book.id);
     }
     
     toast.success("Download started!");
@@ -66,7 +71,7 @@ const BookDetail = () => {
               {book.category}
             </span>
             <span className="font-semibold text-lg">
-              {book.isPaid ? `$${book.price.toFixed(2)}` : "Free"}
+              {formatPrice(book.price, book.currency)}
             </span>
           </div>
           
